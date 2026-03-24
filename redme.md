@@ -41,3 +41,41 @@ We need to extract more information from DOOM engine and separate it to classes
 So class A gets A treatment. Fully rendered. Class B - some replacements allowed. Classes D and F - whatever left over. 
 
 Of course, higher classes blocks can, and will be, re-used on lower priority classes. 
+
+---
+
+Basic serial prerequisites and VT520 init
+
+Assumption: no getty is attached to `/dev/ttyS0`, and your process owns that port.
+
+1) Give your user direct access to `/dev/ttyS0` on Linux
+
+- Check device owner/group:
+  - `ls -l /dev/ttyS0`
+- Most distros gate serial access via group `dialout` (sometimes `uucp`):
+  - `sudo usermod -aG dialout $USER`
+- Re-login (or reboot) so new group membership is active.
+- Optional udev rule for stable perms:
+  - Create `/etc/udev/rules.d/99-ttyS0.rules` with:
+    - `KERNEL=="ttyS0", MODE="0660", GROUP="dialout"`
+  - Then: `sudo udevadm control --reload-rules && sudo udevadm trigger`
+
+2) Python initializer
+
+Use `vt520_init.py` to initialize terminal mode over serial:
+
+- Opens `/dev/ttyS0` in `115200 8N1` raw mode.
+- Sends reset and clear.
+- Selects WYSE 160/60 personality (`ESC ~ 4`).
+- Enables WYSE enhanced mode (`ESC ~ !`).
+- Selects 132-column display (`ESC \` ;`) for denser text grid.
+- Preloads four font banks (Native + Graphics 1/2/3).
+
+Run:
+
+- `python3 vt520_init.py --dry-run`
+- `python3 vt520_init.py --device /dev/ttyS0 --baud 115200`
+
+Note on "best" pseudo-graphics mode:
+- For pure VT line drawing, DEC Special Graphics (`ESC ) 0`, SO/SI) is simplest.
+- For this project (custom per-frame glyphs), WYSE 160/60 + four font banks is the better base because it exposes more simultaneously displayable glyphs.
