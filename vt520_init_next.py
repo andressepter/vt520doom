@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 """
+NEXT ITERATION FORK — copy of vt520_init.py; extend here for frame/font upload experiments.
+
+Stable entrypoint remains: ./vt520_init.py
+
 Initialize a serial-attached DEC- or Wyse-personality session (see terminal Setup).
 
 `--model vt510` — DEC control sequences (VT510/420/320-class). Default avoids full RIS when that
